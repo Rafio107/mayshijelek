@@ -35,11 +35,18 @@ def custom_css():
     <style>
     body {
         font-family: 'Courier New', Courier, monospace;
-        background-color: #ADD8E6; /* Ubah latar belakang ke biru muda */
+        background-color: #ADD8E6; /* Latar belakang biru muda */
         color: #000000; /* Warna teks hitam */
         margin: 0;
+    }
+    h1, h2, h3 {
         text-align: center;
-        padding: 50px;
+        color: #003366;
+    }
+    .content {
+        text-align: left;
+        margin: 0 auto;
+        max-width: 800px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -48,20 +55,29 @@ def custom_css():
 def page1():
     st.title("Welcome to Linear Group 5!")
     st.header("Image Compression Project")
-    st.write("""
-    This project is developed by **Linear Group 5** to demonstrate image compression techniques.
-    You can navigate through the following pages:
-    - **Page 1**: Introduction and Instructions
-    - **Page 2**: Team Members
-    - **Page 3**: Image Compression Tool
-    """)
-    st.write("### Instructions:")
-    st.write("""
-    1. Navigate to **Page 3**.
-    2. Upload an image (PNG, JPEG, JPG, or GIF).
-    3. Adjust the compression quality and pixelation factor using the sliders.
-    4. Download the compressed image.
-    """)
+
+    # Gunakan div khusus agar teks rata kiri
+    st.markdown("""
+    <div class="content">
+        <p>
+            This project is developed by <b>Linear Group 5</b> to demonstrate image compression techniques.
+            You can navigate through the following pages:
+        </p>
+        <ul>
+            <li><b>Page 1</b>: Introduction and Instructions</li>
+            <li><b>Page 2</b>: Team Members</li>
+            <li><b>Page 3</b>: Image Compression Tool</li>
+        </ul>
+        <h3>Instructions:</h3>
+        <ol>
+            <li>Navigate to <b>Page 3</b>.</li>
+            <li>Upload an image (PNG, JPEG, JPG, or GIF).</li>
+            <li>Adjust the compression quality and pixelation factor using the sliders.</li>
+            <li>Download the compressed image.</li>
+        </ol>
+    </div>
+    """, unsafe_allow_html=True)
+
     st.info("Use the sidebar to navigate to other pages.")
 
 # Halaman 2: Anggota Grup
@@ -69,7 +85,7 @@ def page2():
     st.title("Our Team Members")
     st.header("Linear Group 5")
     st.write("""
-    - **Member 1**: Mayshi Permatasari Eddy Putri  
+    - **Member 1**: Alice Smith  
     - **Member 2**: Bob Johnson  
     - **Member 3**: Charlie Brown  
     - **Member 4**: David Williams  
