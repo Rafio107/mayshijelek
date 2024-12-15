@@ -1,12 +1,19 @@
 from flask import Flask, render_template_string, request, send_file
 from PIL import Image
 import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 COMPRESSED_FOLDER = 'compressed'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(COMPRESSED_FOLDER, exist_ok=True)
+
+# Allowed file extensions for image uploads
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # CSS Styles for the entire application
 css_styles = '''
@@ -91,20 +98,25 @@ def compress():
         if file.filename == '':
             return "No selected file", 400
 
-        filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-        compressed_path = os.path.join(COMPRESSED_FOLDER, f"compressed_{file.filename}")
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
+            compressed_path = os.path.join(COMPRESSED_FOLDER, f"compressed_{filename}")
 
-        file.save(filepath)
-        with Image.open(filepath) as img:
-            img.save(compressed_path, optimize=True, quality=50)
+            file.save(filepath)
+            with Image.open(filepath) as img:
+                img.save(compressed_path, optimize=True, quality=50)
+            os.remove(filepath)
 
-        return render_template_string(f'''
-        {css_styles}
-        <div class="container">
-            <h1>Image Compressed!</h1>
-            <a href="{{{{ url_for('download_file', filename='compressed_{file.filename}') }}}}" class="btn">Download Image</a>
-        </div>
-        ''')
+            return render_template_string(f'''
+            {css_styles}
+            <div class="container">
+                <h1>Image Compressed!</h1>
+                <a href="{{{{ url_for('download_file', filename='compressed_{filename}') }}}}" class="btn">Download Image</a>
+            </div>
+            ''')
+        else:
+            return "Invalid file format. Only images are allowed", 400
 
     compress_html = f'''
     {css_styles}
@@ -137,4 +149,4 @@ def download_file(filename):
     return send_file(os.path.join(COMPRESSED_FOLDER, filename), as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
