@@ -85,11 +85,9 @@ def page2():
     st.title("Our Team Members")
     st.header("Linear Group 5")
     st.write("""
-    - **Member 1**: Alice Smith  
-    - **Member 2**: Bob Johnson  
-    - **Member 3**: Charlie Brown  
-    - **Member 4**: David Williams  
-    - **Member 5**: Emma Davis  
+    - **Member 1**: NOVITA AIROTORIA SINAGA (004202300062) 
+    - **Member 2**: MAYSHI PERMATASARI EDDYPUTRI (004202300048)
+    - **Member 3**: CORAIMA DELANEIRA MEZIA GUSMÃO (004202300085)
     """)
     st.write("We worked together to deliver this awesome image compression app!")
 
