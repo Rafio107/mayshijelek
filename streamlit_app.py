@@ -44,8 +44,41 @@ def custom_css():
     </style>
     """, unsafe_allow_html=True)
 
-# Main Streamlit App
-def main():
+# Halaman 1: Linear Group 5 dan Instruksi
+def page1():
+    st.title("Welcome to Linear Group 5!")
+    st.header("Image Compression Project")
+    st.write("""
+    This project is developed by **Linear Group 5** to demonstrate image compression techniques.
+    You can navigate through the following pages:
+    - **Page 1**: Introduction and Instructions
+    - **Page 2**: Team Members
+    - **Page 3**: Image Compression Tool
+    """)
+    st.write("### Instructions:")
+    st.write("""
+    1. Navigate to **Page 3**.
+    2. Upload an image (PNG, JPEG, JPG, or GIF).
+    3. Adjust the compression quality and pixelation factor using the sliders.
+    4. Download the compressed image.
+    """)
+    st.info("Use the sidebar to navigate to other pages.")
+
+# Halaman 2: Anggota Grup
+def page2():
+    st.title("Our Team Members")
+    st.header("Linear Group 5")
+    st.write("""
+    - **Member 1**: Mayshi Permatasari Eddy Putri  
+    - **Member 2**: Bob Johnson  
+    - **Member 3**: Charlie Brown  
+    - **Member 4**: David Williams  
+    - **Member 5**: Emma Davis  
+    """)
+    st.write("We worked together to deliver this awesome image compression app!")
+
+# Halaman 3: Proses Kompresi Gambar
+def page3():
     st.title("Pixel Compress")
     st.write("Compress your photos with a pixelated style!")
 
@@ -84,6 +117,20 @@ def main():
     else:
         st.info("Please upload an image file.")
 
+# Main App: Navigasi antar halaman
+def main():
+    # Sidebar untuk navigasi antar halaman
+    st.sidebar.title("Navigation")
+    page = st.sidebar.radio("Go to", ["Page 1: Introduction", "Page 2: Team Members", "Page 3: Image Compression"])
+
+    custom_css()  # Terapkan CSS
+
+    if page == "Page 1: Introduction":
+        page1()
+    elif page == "Page 2: Team Members":
+        page2()
+    elif page == "Page 3: Image Compression":
+        page3()
+
 if __name__ == "__main__":
-    custom_css()
     main()
