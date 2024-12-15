@@ -1,27 +1,24 @@
 import streamlit as st
 from PIL import Image
-import os
 import io
 
-# Folder untuk menyimpan gambar yang diupload dan dikompresi
-UPLOAD_FOLDER = 'uploads'
-COMPRESSED_FOLDER = 'compressed'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(COMPRESSED_FOLDER, exist_ok=True)
-
-# Allowed file extensions for image uploads
+# Fungsi untuk memeriksa format file yang diperbolehkan
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-# Fungsi untuk memeriksa format file yang diperbolehkan
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Fungsi untuk mengompres gambar
 def compress_image(image, quality=50):
     img = Image.open(image)
+    
+    # Convert image to JPEG format if it is not already JPEG
+    if img.mode in ("RGBA", "P"):  # Convert png with transparency to RGB
+        img = img.convert("RGB")
+    
     compressed_image = io.BytesIO()  # Buffer untuk gambar terkompresi
     img.save(compressed_image, format="JPEG", optimize=True, quality=quality)
-    compressed_image.seek(0)  # Kembalikan ke posisi awal setelah menulis
+    compressed_image.seek(0)  # Kembali ke posisi awal setelah menulis
     return compressed_image
 
 # CSS untuk tampilan custom di Streamlit
@@ -87,7 +84,7 @@ def custom_css():
 def main():
     st.title("Pixel Compress")
     st.write("Compress your photos in a pixelated style!")
-    
+
     # Mengupload gambar
     uploaded_file = st.file_uploader("Upload an image", type=["png", "jpg", "jpeg", "gif"])
 
@@ -98,23 +95,13 @@ def main():
 
         # Kompres gambar
         if st.button("Compress Image"):
-            compressed_img = compress_image(uploaded_file)
+            with st.spinner("Compressing..."):
+                compressed_img = compress_image(uploaded_file)
 
-            # Tampilkan gambar hasil kompresi
-            st.image(compressed_img, caption="Compressed Image", use_column_width=True)
+                # Tampilkan gambar hasil kompresi
+                st.image(compressed_img, caption="Compressed Image", use_column_width=True)
 
-            # Tombol untuk mendownload gambar terkompresi
-            st.download_button(
-                label="Download Compressed Image",
-                data=compressed_img,
-                file_name=f"compressed_{uploaded_file.name}",
-                mime="image/jpeg"
-            )
-
-    # Tampilan report
-    st.sidebar.title("Report")
-    st.sidebar.write("Here you can display your report data or statistics.")
-
-if __name__ == '__main__':
-    custom_css()
-    main()
+                # Tombol untuk mendownload gambar terkompresi
+                st.download_button(
+                    label="Download Compressed Image",
+                   
