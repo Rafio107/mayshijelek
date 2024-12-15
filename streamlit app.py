@@ -1,9 +1,9 @@
-from flask import Flask, render_template_string, request, send_file
+import streamlit as st
 from PIL import Image
 import os
-from werkzeug.utils import secure_filename
+import io
 
-app = Flask(__name__)
+# Folder untuk menyimpan gambar yang diupload dan dikompresi
 UPLOAD_FOLDER = 'uploads'
 COMPRESSED_FOLDER = 'compressed'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -12,12 +12,22 @@ os.makedirs(COMPRESSED_FOLDER, exist_ok=True)
 # Allowed file extensions for image uploads
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
+# Fungsi untuk memeriksa format file yang diperbolehkan
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# CSS Styles for the entire application
-css_styles = '''
-<style>
+# Fungsi untuk mengompres gambar
+def compress_image(image, quality=50):
+    img = Image.open(image)
+    compressed_image = io.BytesIO()  # Buffer untuk gambar terkompresi
+    img.save(compressed_image, format="JPEG", optimize=True, quality=quality)
+    compressed_image.seek(0)  # Kembalikan ke posisi awal setelah menulis
+    return compressed_image
+
+# CSS untuk tampilan custom di Streamlit
+def custom_css():
+    st.markdown("""
+    <style>
     body {
         font-family: 'Courier New', Courier, monospace;
         background-color: #1e1e2f;
@@ -70,83 +80,41 @@ css_styles = '''
         width: 80%;
         text-align: center;
     }
-</style>
-'''
+    </style>
+    """, unsafe_allow_html=True)
 
-# Homepage
-@app.route('/')
-def homepage():
-    homepage_html = f'''
-    {css_styles}
-    <div class="container">
-        <h1>Pixel Compress</h1>
-        <p>Compress your photos in a pixelated style!</p>
-        <a href="/compress" class="btn">Start Compressing</a>
-        <a href="/report" class="btn">View Report</a>
-    </div>
-    '''
-    return render_template_string(homepage_html)
+# Main Streamlit App
+def main():
+    st.title("Pixel Compress")
+    st.write("Compress your photos in a pixelated style!")
+    
+    # Mengupload gambar
+    uploaded_file = st.file_uploader("Upload an image", type=["png", "jpg", "jpeg", "gif"])
 
-# Compress Page
-@app.route('/compress', methods=['GET', 'POST'])
-def compress():
-    if request.method == 'POST':
-        if 'image' not in request.files:
-            return "No file uploaded", 400
+    # Jika file diupload dan formatnya diperbolehkan
+    if uploaded_file is not None and allowed_file(uploaded_file.name):
+        # Tampilkan gambar yang diupload
+        st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
 
-        file = request.files['image']
-        if file.filename == '':
-            return "No selected file", 400
+        # Kompres gambar
+        if st.button("Compress Image"):
+            compressed_img = compress_image(uploaded_file)
 
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(UPLOAD_FOLDER, filename)
-            compressed_path = os.path.join(COMPRESSED_FOLDER, f"compressed_{filename}")
+            # Tampilkan gambar hasil kompresi
+            st.image(compressed_img, caption="Compressed Image", use_column_width=True)
 
-            file.save(filepath)
-            with Image.open(filepath) as img:
-                img.save(compressed_path, optimize=True, quality=50)
-            os.remove(filepath)
+            # Tombol untuk mendownload gambar terkompresi
+            st.download_button(
+                label="Download Compressed Image",
+                data=compressed_img,
+                file_name=f"compressed_{uploaded_file.name}",
+                mime="image/jpeg"
+            )
 
-            return render_template_string(f'''
-            {css_styles}
-            <div class="container">
-                <h1>Image Compressed!</h1>
-                <a href="{{{{ url_for('download_file', filename='compressed_{filename}') }}}}" class="btn">Download Image</a>
-            </div>
-            ''')
-        else:
-            return "Invalid file format. Only images are allowed", 400
-
-    compress_html = f'''
-    {css_styles}
-    <div class="container">
-        <h1>Compress Your Image</h1>
-        <form id="cropForm" action="/compress" method="POST" enctype="multipart/form-data">
-            <input type="file" name="image" accept="image/*" required>
-            <button class="btn" type="submit">Compress</button>
-        </form>
-    </div>
-    '''
-    return render_template_string(compress_html)
-
-# Report Page
-@app.route('/report')
-def report():
-    report_html = f'''
-    {css_styles}
-    <div class="container">
-        <h1>Report</h1>
-        <p>Here you can display your report data or statistics.</p>
-        <a href="/" class="btn">Back to Home</a>
-    </div>
-    '''
-    return render_template_string(report_html)
-
-# Download compressed file
-@app.route('/download/<filename>')
-def download_file(filename):
-    return send_file(os.path.join(COMPRESSED_FOLDER, filename), as_attachment=True)
+    # Tampilan report
+    st.sidebar.title("Report")
+    st.sidebar.write("Here you can display your report data or statistics.")
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    custom_css()
+    main()
